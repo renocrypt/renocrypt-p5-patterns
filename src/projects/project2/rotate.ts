@@ -1,55 +1,67 @@
 import p5 from 'p5'
 
-class Flower {
+export class Flower {
+    private x: number[];
+    private y: number[];
+    private pts: number;
+    private r: number;
+    private r_var: number;
+    private period: number;
+    private speed: number;
+    private rot: number;
     private p: p5;
-    private x: number[] = [];
-    private y: number[] = [];
-    private pts: number = 100;
-    private r: number = 100;
-    private r_var: number | undefined;
-    private period: number = 8;
-    private rotate: number = 0;
 
-    constructor(p: p5) {
+    constructor(p: p5, r: number, pts: number, r_var: number, period: number, speed: number) {
         this.p = p;
+        this.x = [];
+        this.y = [];
+        this.pts = pts;
+        this.r = r;
+        this.r_var = r_var;
+        this.period = period;
+        this.speed = speed;
+        this.rot = 0;
     }
 
-    setup(): void {
-        this.p.createCanvas(400, 400);
-        this.p.angleMode(this.p.DEGREES);
-    }
-
-    draw(): void {
-        this.p.background(230);
-        this.p.translate(this.p.width / 2, this.p.height / 2);
-
-        this.p.stroke(255, 0, 255);
-        this.p.noFill();
+    display(): void {
+        this.p.push();
+        this.p.blendMode(this.p.DIFFERENCE);
+        this.p.noStroke();
+        this.p.fill(255);
         this.p.beginShape();
         for (let i = 0; i <= this.pts; i++) {
             let angle = (i / this.pts) * 360;
-            this.r_var = 10 * this.p.cos(angle * this.period);
-            this.x[i] = (this.r + this.r_var) * this.p.cos(angle + this.rotate);
-            this.y[i] = (this.r + this.r_var) * this.p.sin(angle + this.rotate);
+            let pedal = this.r_var * Math.cos(this.p.radians(angle * this.period));
+            this.x[i] = (this.r + pedal) * Math.cos(this.p.radians(angle + this.rot));
+            this.y[i] = (this.r + pedal) * Math.sin(this.p.radians(angle + this.rot));
             this.p.vertex(this.x[i], this.y[i]);
         }
         this.p.endShape(this.p.CLOSE);
-        this.rotate += 1;
+        this.p.pop();
+        this.rot += this.speed;
     }
 }
 
 export const project2 = {
     name: 'Flowers',
     sketch: (p: p5) => {
-        let flower: Flower;
+        let flowers: Flower[] = [];
+        let num: number = 7;
 
         p.setup = () => {
-            flower = new Flower(p);
-            flower.setup();
+            p.createCanvas(400, 400);
+            p.angleMode(p.DEGREES)
+            for (let i = 0; i < num; i++) {
+                flowers[i] = new Flower(p, 160 - i * 18, 100, 15, 7, i * 0.5);
+            }
         }
 
         p.draw = () => {
-            flower.draw();
+            p.background(220)
+            p.translate(p.height / 2, p.width / 2)
+            for (let i = 0; i < num; i++) {
+                flowers[i].display()
+            }
         }
     },
     controls: () => {
